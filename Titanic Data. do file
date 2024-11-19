@@ -1,0 +1,75 @@
+
+use "/Users/sajidhasnat/Downloads/titanic.dta"
+
+
+u titanic.dta, clear
+
+
+gen female=0
+replace female=1 if gender==235
+
+gen child=0
+replace child=1 if age<16
+replace child=. if age==.
+
+tab pclass, gen(class)
+
+
+sum
+ta survived
+ta survived if female==1
+ta survived if female==0
+ta survived if female==1 & class1==1
+
+tab gender pclass, sum(survived) means
+
+
+reg survived female class1 class2 
+i means survived 
+
+ci means survived if child==1
+
+
+reg survived child female class1 class2
+
+
+
+predict yhat
+sum yhat
+count if yhat >1
+br if yhat>1 & yhat!=.
+
+
+probit survived child female class1 class2
+logit survived child female class1 class2
+
+
+* Linear Probability Model
+reg survived i.child i.female i.class1 i.class2, r
+
+* Probit Model
+probit survived i.child i.female i.class1 i.class2
+margins, dydx(*) atmeans post
+
+* Logit Model
+logit survived i.child i.female i.class1 i.class2
+margins, dydx(*) atmeans post
+
+
+
+reg survived i.child i.female i.class1 i.class2, r
+di "LPM"
+margins, at(child=1 female=1 class1==0 class2==0)
+
+probit survived i.child i.female i.class1 i.class2
+di "probit"
+
+di normal(-1.308744 + .6310225+ 1.483612 )
+margins, at(child=1 female=1 class1==0 class2==0)
+
+logit survived i.child i.female i.class1 i.class2
+di "logit"
+margins, at(child=1 female=1 class1==0 class2==0)
+
+//Findings: Being a child increases the likelihood of survival by 19.5 percentage points relative to being an adult. Being female increased the likelihood of survival by 49.7% percentage points relative to beign male. Being in the first class increased the odds of survival by 31.2 pp and being in the 2nd class increased them by 14.4pp, both relative to being in the 3rd class. In all, women and children were really prioritized in the resque efforts. Social class mattered for survival.  For probit, the odds ofsurviving when female increase by 54pp relative to male. For logit model, the odds of surviving when female increase by 55.3pp relative to male
+
